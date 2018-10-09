@@ -122,11 +122,11 @@ class VimCell {
                     if (motionArgs.forward) {
                         // ns.notebook.select_next();
                         commands.execute('notebook:move-cursor-down');
-                        // key = 'j';
+                        // key = 'n';
                     } else {
                         // ns.notebook.select_prev();
                         commands.execute('notebook:move-cursor-up');
-                        // key = 'k';
+                        // key = 'e';
                     }
                     // ns.notebook.edit_mode();
                     // var new_cell = ns.notebook.get_selected_cell();
@@ -155,16 +155,48 @@ class VimCell {
                 vim.lastHSPos = cm.charCoords(CodeMirror.Pos(line, endCh), 'div').left;
                 return (CodeMirror as any).Pos(line, endCh);
             });
-
             lvim.mapCommand(
-                'k', 'motion', 'moveByLinesOrCell',
+                ';', 'ex'
+            );
+            lvim.mapCommand(
+                'K', 'motion', 'findNext',
+                { forward: false, toJumplist: true },
+                { context: 'normal' }
+            );
+            lvim.mapCommand(
+                'k', 'motion', 'findNext',
+                { forward: true, toJumplist: true },
+                { context: 'normal' }
+            );
+            lvim.mapCommand(
+                'e', 'motion', 'moveByLinesOrCell',
                 { forward: false, linewise: true },
                 { context: 'normal' }
             );
             lvim.mapCommand(
-                'j', 'motion', 'moveByLinesOrCell',
+                'e', 'motion', 'moveByLinesOrCell',
+                { forward: false, linewise: true },
+                { context: 'visual' }
+            );
+            lvim.mapCommand(
+                'i', 'motion', 'moveByCharacters',
+                { forward: true},
+                { context: 'normal' }
+            );
+            lvim.mapCommand(
+                'i', 'motion', 'moveByCharacters',
+                { forward: true},
+                { context: 'visual' }
+            );
+            lvim.mapCommand(
+                'n', 'motion', 'moveByLinesOrCell',
                 { forward: true, linewise: true },
                 { context: 'normal' }
+            );
+            lvim.mapCommand(
+                'n', 'motion', 'moveByLinesOrCell',
+                { forward: true, linewise: true },
+                { context: 'visual' }
             );
 
             lvim.defineAction('moveCellDown', (cm: any, actionArgs: any) => {
@@ -464,6 +496,16 @@ function activateCellVim(app: JupyterLab, tracker: INotebookTracker): Promise<vo
             selector: '.jp-Notebook:focus',
             keys: ['Shift M'],
             command: 'merge-and-edit'
+        });
+        commands.addKeyBinding({
+            selector: '.jp-Notebook.jp-mod-editMode',
+            keys: ['Ctrl 1'],
+            command: 'notebook:change-cell-to-code'
+        });
+        commands.addKeyBinding({
+            selector: '.jp-Notebook.jp-mod-editMode',
+            keys: ['Ctrl 2'],
+            command: 'notebook:change-cell-to-markdown'
         });
         commands.addKeyBinding({
             selector: '.jp-Notebook.jp-mod-editMode',
